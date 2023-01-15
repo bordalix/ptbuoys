@@ -1,0 +1,148 @@
+<body>
+  <style>
+    #container {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    details {
+      background-color: #eee;
+      border: 1px solid #aaa;
+      padding: 1rem;
+      margin: 2px;
+    }
+
+    .table {
+      background-color: #fff;
+      border-collapse: collapse;
+      font-size: 1rem;
+      margin: 1rem 0;
+      width: 100%;
+    }
+
+    .table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    .table td:nth-child(even) {
+      text-align: right;
+    }
+
+    .table tr:hover {
+      background-color: #ddd;
+    }
+
+    .table-striped tr:nth-child(even) {
+      background-color: #f8f8f8;
+    }
+  </style>
+
+  <section id="container">
+    <h1>Buoys Portugal</h1>
+    <p>Via <a href="https://www.hidrografico.pt">hidrografico.pt</a></p>
+  </section>
+
+  <script>
+    const referer = 'https://www.hidrografico.pt'
+
+    // common attributes for a buoy
+    const common = {
+      boia_vis: '1',
+      gmt: 'GMT',
+      dtz: 'Europe/Lisbon',
+      key: '123',
+    }
+
+    // list of buoys
+    const list = [
+      {
+        dbn: 'monican',
+        id_est: '3',
+        id_eqp: '3',
+        name: 'Leixões oceânica',
+      },
+      {
+        dbn: 'parweb',
+        id_est: '4',
+        id_eqp: '4',
+        name: 'Leixões costeira',
+      },
+      {
+        dbn: 'monican',
+        id_est: '1',
+        id_eqp: '1011',
+        name: 'Nazaré oceânica',
+      },
+      {
+        dbn: 'monican',
+        id_est: '2',
+        id_eqp: '2',
+        name: 'Nazaré costeira',
+      },
+      {
+        id_est: '1008',
+        id_eqp: '1014',
+        dbn: 'parweb',
+        name: 'Sines oceânica',
+      },
+      {
+        id_est: '19',
+        id_eqp: '19',
+        dbn: 'parweb',
+        name: 'Sines costeira',
+      },
+      {
+        id_est: '1005',
+        id_eqp: '1009',
+        dbn: 'monican',
+        name: 'Faro oceânica',
+      },
+      {
+        id_est: '20',
+        id_eqp: '20',
+        dbn: 'parweb',
+        name: 'Faro costeira',
+      },
+    ]
+
+    const normalizeURL = (thisBuoy) => {
+      const buoy = { ...common, ...thisBuoy }
+      const params = []
+      const prefix = 'https://www.hidrografico.pt/json/prod.boias.process.php?'
+      for (let key of Object.keys(buoy)) params.push(`${key}=${buoy[key]}`)
+      return encodeURIComponent(prefix + params.join('&'))
+    }
+
+    const fetchWithReferer = async (referer, url) => {
+      const host = 'https://referereverywhere.bordalix.workers.dev/?'
+      const href = host + `referer=${referer}&tofetch=${url}`
+      const resp = await fetch(href)
+      return await resp.text()
+    }
+
+    const getBuoyInformation = async (buoy) => {
+      const url = normalizeURL(buoy)
+      const txt = await fetchWithReferer(referer, url)
+      return txt.match(/<tr/) ? txt : '<p>Erro técnico</p>'
+    }
+
+    addEventListener('DOMContentLoaded', async (event) => {
+      // main container
+      const mainContainer = document.getElementById('container')
+
+      // generate DOM
+      for (const buoy of list) {
+        const details = document.createElement('details')
+        const summary = document.createElement('summary')
+        const container = document.createElement('div')
+        const info = await getBuoyInformation(buoy)
+        summary.innerText = buoy.name
+        container.innerHTML = info
+        details.appendChild(summary)
+        details.appendChild(container)
+        mainContainer.appendChild(details)
+      }
+    })
+  </script>
+</body>
