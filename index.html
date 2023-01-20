@@ -40,6 +40,15 @@
       .table-striped tr:nth-child(even) {
         background-color: #f8f8f8;
       }
+
+      .moreInfo {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      .moreInfo p {
+        margin: 0;
+      }
     </style>
 
     <section id="container">
@@ -61,51 +70,75 @@
       // list of buoys
       const list = [
         {
+          coord: "41°08.9' N, 009°34.9' W",
           dbn: 'monican',
+          depth: '1600m',
+          id: 'leixoes_ocean',
           id_est: '3',
           id_eqp: '3',
           name: 'Leixões oceânica',
         },
         {
+          coord: "41°19.00' N, 008°59.00' W",
           dbn: 'parweb',
+          depth: '83m',
+          id: 'leixoes_coast',
           id_est: '4',
           id_eqp: '4',
           name: 'Leixões costeira',
         },
         {
+          coord: "39°30.9' N, 009°38.2' W",
           dbn: 'monican',
+          depth: '2000m',
+          id: 'nazare_ocean',
           id_est: '1',
           id_eqp: '1011',
           name: 'Nazaré oceânica',
         },
         {
+          coord: "39°33.6' N, 009°12.6' W",
           dbn: 'monican',
+          depth: '90m',
+          id: 'nazare_coast',
           id_est: '2',
           id_eqp: '2',
           name: 'Nazaré costeira',
         },
         {
+          coord: "37°41.5' N, 009°43.5' W",
+          dbn: 'parweb',
+          depth: '1768m',
+          id: 'sines_ocean',
           id_est: '1008',
           id_eqp: '1014',
-          dbn: 'parweb',
           name: 'Sines oceânica',
         },
         {
+          coord: "37°55.3' N, 008°55.7' W",
+          dbn: 'parweb',
+          depth: '97m',
+          id: 'sines_coast',
           id_est: '19',
           id_eqp: '19',
-          dbn: 'parweb',
           name: 'Sines costeira',
         },
         {
+          coord: "36°23.90' N, 008°04.10' W",
+          dbn: 'monican',
+          depth: '1334m',
+          id: 'faro_ocean',
           id_est: '1005',
           id_eqp: '1009',
-          dbn: 'monican',
           name: 'Faro oceânica',
         },
         {
+          coord: "36°54.3' N, 007°53.9' W",
+          dbn: 'parweb',
+          depth: '93m',
+          id: 'faro_coast',
           id_est: '20',
           id_eqp: '20',
-          dbn: 'parweb',
           name: 'Faro costeira',
         },
       ]
@@ -132,21 +165,36 @@
         return txt.match(/<tr/) ? txt : '<p>Erro técnico</p>'
       }
 
+      const moreInfo = ({ coord, depth }) =>
+        `<div class="moreInfo">
+          <p>📍 ${coord}</p>
+          <p>${depth} ⏬</p>
+        </div>`
+
       addEventListener('DOMContentLoaded', async (event) => {
         // main container
         const mainContainer = document.getElementById('container')
 
         // generate DOM
         for (const buoy of list) {
+          const { id, name, coord, depth } = buoy
           const details = document.createElement('details')
           const summary = document.createElement('summary')
           const container = document.createElement('div')
           const info = await getBuoyInformation(buoy)
-          summary.innerText = buoy.name
-          container.innerHTML = info
+          details.id = id
+          summary.innerText = name
+          container.innerHTML = info + moreInfo(buoy)
           details.appendChild(summary)
           details.appendChild(container)
           mainContainer.appendChild(details)
+        }
+
+        // open details if any on query
+        if (window.location.search) {
+          const id = window.location.search.substring(1)
+          const details = document.getElementById(id)
+          if (details) details.open = true
         }
       })
     </script>
