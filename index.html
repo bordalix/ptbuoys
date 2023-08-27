@@ -1,8 +1,6 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-  </head>
-  <body>
     <style>
       #container {
         max-width: 420px;
@@ -50,7 +48,8 @@
         margin: 0;
       }
     </style>
-
+  </head>
+  <body>
     <section id="container">
       <h1>Buoys Portugal</h1>
       <p>Via <a href="https://www.hidrografico.pt">hidrografico.pt</a></p>
@@ -61,6 +60,7 @@
 
       // common attributes for a buoy
       const common = {
+        boia_url: '',
         boia_vis: '1',
         gmt: 'GMT',
         dtz: 'Europe/Lisbon',
@@ -70,6 +70,7 @@
       // list of buoys
       const list = [
         {
+          address: 'Boia oceânica',
           coord: "41°08.9' N, 009°34.9' W",
           dbn: 'monican',
           depth: '1600m',
@@ -79,6 +80,7 @@
           name: 'Leixões oceânica',
         },
         {
+          address: 'Boia costeira',
           coord: "41°19.00' N, 008°59.00' W",
           dbn: 'parweb',
           depth: '83m',
@@ -88,6 +90,7 @@
           name: 'Leixões costeira',
         },
         {
+          address: 'Boia oceânica',
           coord: "39°30.9' N, 009°38.2' W",
           dbn: 'monican',
           depth: '2000m',
@@ -97,6 +100,7 @@
           name: 'Nazaré oceânica',
         },
         {
+          address: 'Boia costeira',
           coord: "39°33.6' N, 009°12.6' W",
           dbn: 'monican',
           depth: '90m',
@@ -106,8 +110,9 @@
           name: 'Nazaré costeira',
         },
         {
+          address: 'Boia oceânica',
           coord: "37°41.5' N, 009°43.5' W",
-          dbn: 'parweb',
+          dbn: 'monican',
           depth: '1768m',
           id: 'sines_ocean',
           id_est: '1008',
@@ -115,15 +120,17 @@
           name: 'Sines oceânica',
         },
         {
+          address: 'Boia costeira',
           coord: "37°55.3' N, 008°55.7' W",
           dbn: 'parweb',
           depth: '97m',
           id: 'sines_coast',
           id_est: '19',
           id_eqp: '19',
-          name: 'Sines costeira',
+          name: 'Sines',
         },
         {
+          address: 'Boia oceânica',
           coord: "36°23.90' N, 008°04.10' W",
           dbn: 'monican',
           depth: '1334m',
@@ -133,6 +140,7 @@
           name: 'Faro oceânica',
         },
         {
+          address: 'Boia costeira',
           coord: "36°54.3' N, 007°53.9' W",
           dbn: 'parweb',
           depth: '93m',
@@ -143,12 +151,24 @@
         },
       ]
 
+      const keysInUrl = [
+        'key',
+        'id_est',
+        'id_eqp',
+        'dbn',
+        'name',
+        'address',
+        'gmt',
+        'dtz',
+        'boia_url',
+        'boia_vis',
+      ]
+
       const normalizeURL = (thisBuoy) => {
         const buoy = { ...common, ...thisBuoy }
         const params = []
-        const prefix =
-          'https://www.hidrografico.pt/json/prod.boias.process.php?'
-        for (let key of Object.keys(buoy)) params.push(`${key}=${buoy[key]}`)
+        const prefix = `${referer}/json/prod.boias.process.php?`
+        for (let key of keysInUrl) params.push(`${key}=${buoy[key]}`)
         return encodeURIComponent(prefix + params.join('&'))
       }
 
