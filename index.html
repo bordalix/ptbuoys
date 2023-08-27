@@ -7,6 +7,10 @@
         margin: 0 auto;
       }
 
+      h1 {
+        font-size: 2em;
+      }
+
       details {
         background-color: #eee;
         border: 1px solid #aaa;
@@ -53,6 +57,7 @@
     <section id="container">
       <h1>Buoys Portugal</h1>
       <p>Via <a href="https://www.hidrografico.pt">hidrografico.pt</a></p>
+      <h2>Continente</h2>
     </section>
 
     <script>
@@ -151,6 +156,44 @@
         },
       ]
 
+      const azoresList = [
+        {
+          coord: "38°45.04' N, 27°00.60' W",
+          depth: '?',
+          index: 1,
+          id: 'azores_vitoria',
+          name: 'Praia da Vitória',
+        },
+        {
+          coord: "37°43.546' N, 25°43.284' W",
+          depth: '?',
+          index: 2,
+          id: 'azores_ponta_delgada',
+          name: 'Ponta Delgada',
+        },
+        {
+          coord: "39°22.225' N, 31°9.448' W",
+          depth: '?',
+          index: 3,
+          id: 'azores_flores',
+          name: 'Flores',
+        },
+        {
+          coord: "38°35.03' N, 28°32.47' W",
+          depth: '?',
+          index: 4,
+          id: 'azores_faial_pico',
+          name: 'Faial/Pico',
+        },
+        {
+          coord: "39°05.208' N, 27°57.732' W",
+          depth: '?',
+          index: 5,
+          id: 'azores_graciosa',
+          name: 'Graciosa',
+        },
+      ]
+
       const keysInUrl = [
         'key',
         'id_est',
@@ -179,6 +222,12 @@
         return await resp.text()
       }
 
+      const fetchWithCors = async (url) => {
+        const cors = 'https://corseverywhere.bordalix.workers.dev/?'
+        const resp = await fetch(cors + url)
+        return await resp.text()
+      }
+
       const getBuoyInformation = async (buoy) => {
         const url = normalizeURL(buoy)
         const txt = await fetchWithReferer(referer, url)
@@ -190,6 +239,75 @@
           <p>📍 ${coord}</p>
           <p>${depth} ⏬</p>
         </div>`
+
+      const fetchAzoresBuoyInfo = async ({ name, index }) => {
+        const host = 'http://www.climaat.angra.uac.pt'
+        const path = `/boias/js/000${index + 1}_ultimo.js`
+        const text = await fetchWithCors(host + path)
+        return text.replaceAll(',', '.')
+      }
+
+      const degreesToCardinalPoint = (degrees) => {
+        console.log('degrees', degrees)
+        if (degrees < 12.25) return 'N'
+        if (degrees < 34.75) return 'NNE'
+        if (degrees < 57.25) return 'NE'
+        if (degrees < 79.75) return 'NEE'
+        if (degrees < 102.25) return 'E'
+        if (degrees < 124.75) return 'SEE'
+        if (degrees < 147.25) return 'SE'
+        if (degrees < 169.75) return 'SSE'
+        if (degrees < 192.25) return 'S'
+        if (degrees < 214.75) return 'SSW'
+        if (degrees < 237.25) return 'SW'
+        if (degrees < 259.75) return 'SWW'
+        if (degrees < 282.25) return 'W'
+        if (degrees < 304.75) return 'NWW'
+        if (degrees < 327.25) return 'NW'
+        if (degrees < 349.75) return 'NNW'
+        if (degrees < 372.25) return 'N'
+      }
+
+      const getTableFromAzoresInfo = (info) => {
+        const dict = {
+          mBoia: ['name'],
+          mPos: ['coord'],
+          mHrLocal: ['Última leitura'],
+          mHz: ['Altura significativa', 'm'],
+          mHmax: ['Altura máxima', 'm'],
+          mTz: ['Período médio', 's'],
+          mTzMx: ['Período máximo', 's'],
+          mDir: ['Dir. ondulação'],
+          mTemp: ['Temp. água', 'ºC'],
+        }
+        const json = {}
+        const rows = info.split('\r\n')
+        for (const row of rows) {
+          const [name, value] = row.replaceAll('"', '').split('=')
+          if (dict[name]) {
+            const key = dict[name][0]
+            const val =
+              name === 'mDir'
+                ? degreesToCardinalPoint(value)
+                : value.replaceAll('"', '') + (dict[name][1] ?? '')
+            json[key] = val
+          }
+        }
+        let table = '<table class="table table-striped"><tbody>'
+        const orderedLines = [
+          'Última leitura',
+          'Altura significativa',
+          'Altura máxima',
+          'Período médio',
+          'Dir. ondulação',
+          'Temp. água',
+        ]
+        for (const line of orderedLines) {
+          table += `<tr><td>${line}</td><td>${json[line]}</td></tr>`
+        }
+        table += '</tbody></table>'
+        return table
+      }
 
       addEventListener('DOMContentLoaded', async (event) => {
         // main container
@@ -205,6 +323,24 @@
           details.id = id
           summary.innerText = name
           container.innerHTML = info + moreInfo(buoy)
+          details.appendChild(summary)
+          details.appendChild(container)
+          mainContainer.appendChild(details)
+        }
+
+        const subtitle = document.createElement('h2')
+        subtitle.innerText = 'Açores'
+        mainContainer.appendChild(subtitle)
+
+        for (const buoy of azoresList) {
+          const info = await fetchAzoresBuoyInfo(buoy)
+          const table = getTableFromAzoresInfo(info)
+          const details = document.createElement('details')
+          const summary = document.createElement('summary')
+          const container = document.createElement('div')
+          details.id = buoy.id
+          summary.innerText = buoy.name
+          container.innerHTML = table + moreInfo(buoy)
           details.appendChild(summary)
           details.appendChild(container)
           mainContainer.appendChild(details)
