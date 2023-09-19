@@ -199,6 +199,13 @@
           id: 'azores_graciosa',
           name: 'Graciosa',
         },
+        {
+          coord: "36º55.270' N, 25º09.99' W",
+          depth: '?',
+          index: 6,
+          id: 'azores_santa_maria',
+          name: 'Santa Maria',
+        },
       ]
 
       const keysInUrl = [
@@ -249,7 +256,7 @@
 
       const fetchAzoresBuoyInfo = async ({ name, index }) => {
         const host = 'http://www.climaat.angra.uac.pt'
-        const path = `/boias/js/000${index + 1}_ultimo.js`
+        const path = `/boias/js/000${index}_ultimo.js`
         const text = await fetchWithCors(host + path)
         return text.replaceAll(',', '.')
       }
