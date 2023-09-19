@@ -11,6 +11,10 @@
         font-size: 2em;
       }
 
+      summary {
+        cursor: pointer;
+      }
+
       details {
         background-color: #eee;
         border: 1px solid #aaa;
@@ -251,7 +255,6 @@
       }
 
       const degreesToCardinalPoint = (degrees) => {
-        console.log('degrees', degrees)
         if (degrees < 12.25) return 'N'
         if (degrees < 34.75) return 'NNE'
         if (degrees < 57.25) return 'NE'
@@ -316,7 +319,7 @@
         // main container
         const mainContainer = document.getElementById('container')
 
-        // generate DOM
+        // generate buoys for continente
         for (const buoy of list) {
           const { id, name, coord, depth } = buoy
           const details = document.createElement('details')
@@ -331,10 +334,12 @@
           mainContainer.appendChild(details)
         }
 
+        // add azores title
         const subtitle = document.createElement('h2')
         subtitle.innerText = 'Açores'
         mainContainer.appendChild(subtitle)
 
+        // generate buoys for azores
         for (const buoy of azoresList) {
           const info = await fetchAzoresBuoyInfo(buoy)
           const table = getTableFromAzoresInfo(info)
