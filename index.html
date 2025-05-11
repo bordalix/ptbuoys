@@ -208,18 +208,7 @@
         },
       ]
 
-      const keysInUrl = [
-        'key',
-        'id_est',
-        'id_eqp',
-        'dbn',
-        'name',
-        'address',
-        'gmt',
-        'dtz',
-        'boia_url',
-        'boia_vis',
-      ]
+      const keysInUrl = ['key', 'id_est', 'id_eqp', 'dbn', 'name', 'address', 'gmt', 'dtz', 'boia_url', 'boia_vis']
 
       const normalizeURL = (thisBuoy) => {
         const buoy = { ...common, ...thisBuoy }
@@ -230,16 +219,20 @@
       }
 
       const fetchWithReferer = async (referer, url) => {
-        const host = 'https://referereverywhere.bordalix.workers.dev/?'
-        const href = host + `referer=${referer}&tofetch=${url}`
-        const resp = await fetch(href)
-        return await resp.text()
+        try {
+          const host = 'https://referereverywhere.bordalix.workers.dev/?'
+          const href = host + `referer=${referer}&tofetch=${url}`
+          const resp = await fetch(href)
+          return await resp.text()
+        } catch {}
       }
 
       const fetchWithCors = async (url) => {
-        const cors = 'https://corseverywhere.bordalix.workers.dev/?'
-        const resp = await fetch(cors + url)
-        return await resp.text()
+        try {
+          const cors = 'https://corseverywhere.bordalix.workers.dev/?'
+          const resp = await fetch(cors + url)
+          return await resp.text()
+        } catch {}
       }
 
       const getBuoyInformation = async (buoy) => {
@@ -255,9 +248,10 @@
         </div>`
 
       const fetchAzoresBuoyInfo = async ({ name, index }) => {
-        const host = 'http://www.climaat.angra.uac.pt'
+        const host = 'https://www.climaat.angra.uac.pt'
         const path = `/boias/js/000${index}_ultimo.js`
         const text = await fetchWithCors(host + path)
+        if (!text) return ''
         return text.replaceAll(',', '.')
       }
 
@@ -300,9 +294,7 @@
           if (dict[name]) {
             const key = dict[name][0]
             const val =
-              name === 'mDir'
-                ? degreesToCardinalPoint(value)
-                : value.replaceAll('"', '') + (dict[name][1] ?? '')
+              name === 'mDir' ? degreesToCardinalPoint(value) : value.replaceAll('"', '') + (dict[name][1] ?? '')
             json[key] = val
           }
         }
@@ -341,25 +333,26 @@
           mainContainer.appendChild(details)
         }
 
-        // add azores title
-        const subtitle = document.createElement('h2')
-        subtitle.innerText = 'Açores'
-        mainContainer.appendChild(subtitle)
-
-        // generate buoys for azores
-        for (const buoy of azoresList) {
-          const info = await fetchAzoresBuoyInfo(buoy)
-          const table = getTableFromAzoresInfo(info)
-          const details = document.createElement('details')
-          const summary = document.createElement('summary')
-          const container = document.createElement('div')
-          details.id = buoy.id
-          summary.innerText = buoy.name
-          container.innerHTML = table + moreInfo(buoy)
-          details.appendChild(summary)
-          details.appendChild(container)
-          mainContainer.appendChild(details)
-        }
+        // // add azores title
+        // const subtitle = document.createElement('h2')
+        // subtitle.innerText = 'Açores'
+        // mainContainer.appendChild(subtitle)
+        //
+        // // generate buoys for azores
+        // for (const buoy of azoresList) {
+        //   const info = await fetchAzoresBuoyInfo(buoy)
+        //   if (!info) continue
+        //   const table = getTableFromAzoresInfo(info)
+        //   const details = document.createElement('details')
+        //   const summary = document.createElement('summary')
+        //   const container = document.createElement('div')
+        //   details.id = buoy.id
+        //   summary.innerText = buoy.name
+        //   container.innerHTML = table + moreInfo(buoy)
+        //   details.appendChild(summary)
+        //   details.appendChild(container)
+        //   mainContainer.appendChild(details)
+        // }
 
         // open details if any on query
         if (window.location.search) {
