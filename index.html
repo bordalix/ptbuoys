@@ -62,7 +62,7 @@
       <h1>Buoys Portugal</h1>
       <p>
         Via <a href="https://www.hidrografico.pt">hidrografico.pt</a><br />
-        Via <a href="http://www.climaat.angra.uac.pt/">climaat.angra.uac.pt</a>
+        <!-- Via <a href="http://www.climaat.angra.uac.pt/">climaat.angra.uac.pt</a> -->
       </p>
       <h2>Continente</h2>
     </section>
@@ -248,7 +248,7 @@
         </div>`
 
       const fetchAzoresBuoyInfo = async ({ name, index }) => {
-        const host = 'https://www.climaat.angra.uac.pt'
+        const host = 'https://climaat.angra.uac.pt'
         const path = `/boias/js/000${index}_ultimo.js`
         const text = await fetchWithCors(host + path)
         if (!text) return ''
@@ -314,11 +314,7 @@
         return table
       }
 
-      addEventListener('DOMContentLoaded', async (event) => {
-        // main container
-        const mainContainer = document.getElementById('container')
-
-        // generate buoys for continente
+      const generateBuoysForContinente = async (mainContainer) => {
         for (const buoy of list) {
           const { id, name, coord, depth } = buoy
           const details = document.createElement('details')
@@ -332,27 +328,39 @@
           details.appendChild(container)
           mainContainer.appendChild(details)
         }
+      }
 
-        // // add azores title
-        // const subtitle = document.createElement('h2')
-        // subtitle.innerText = 'Açores'
-        // mainContainer.appendChild(subtitle)
-        //
-        // // generate buoys for azores
-        // for (const buoy of azoresList) {
-        //   const info = await fetchAzoresBuoyInfo(buoy)
-        //   if (!info) continue
-        //   const table = getTableFromAzoresInfo(info)
-        //   const details = document.createElement('details')
-        //   const summary = document.createElement('summary')
-        //   const container = document.createElement('div')
-        //   details.id = buoy.id
-        //   summary.innerText = buoy.name
-        //   container.innerHTML = table + moreInfo(buoy)
-        //   details.appendChild(summary)
-        //   details.appendChild(container)
-        //   mainContainer.appendChild(details)
-        // }
+      const generateBuoysForAzores = async (mainContainer) => {
+        // add azores title
+        const subtitle = document.createElement('h2')
+        subtitle.innerText = 'Açores'
+        mainContainer.appendChild(subtitle)
+        // generate buoys for azores
+        for (const buoy of azoresList) {
+          const info = await fetchAzoresBuoyInfo(buoy)
+          if (!info) continue
+          const table = getTableFromAzoresInfo(info)
+          const details = document.createElement('details')
+          const summary = document.createElement('summary')
+          const container = document.createElement('div')
+          details.id = buoy.id
+          summary.innerText = buoy.name
+          container.innerHTML = table + moreInfo(buoy)
+          details.appendChild(summary)
+          details.appendChild(container)
+          mainContainer.appendChild(details)
+        }
+      }
+
+      addEventListener('DOMContentLoaded', async (event) => {
+        // main container
+        const mainContainer = document.getElementById('container')
+
+        // generate buoys for continente
+        await generateBuoysForContinente(mainContainer)
+
+        // generate buoys for azores
+        // await generateBuoysForAzores(mainContainer)
 
         // open details if any on query
         if (window.location.search) {
